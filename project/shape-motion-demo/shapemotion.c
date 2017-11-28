@@ -15,9 +15,9 @@
 #include <abCircle.h>
 
 #define GREEN_LED BIT6
+#define RED_LED BIT5
 
-
-AbRect rect515 = {abRectGetBounds, abRectCheck, {5,15}}; /**< 5x15 rectangle */
+AbRect rect515 = {abRectGetBounds, abRectCheck, {4,17}}; /**< 5x15 rectangle */
 AbRArrow rightArrow = {abRArrowGetBounds, abRArrowCheck, 30};
 
 AbRectOutline fieldOutline = {	/* playing field */
@@ -27,16 +27,16 @@ AbRectOutline fieldOutline = {	/* playing field */
 
 Layer layer4 = {
   (AbShape *)&rightArrow,
-  {(screenWidth/2)+10, (screenHeight/2)+5}, /**< bit below & right of center */
+  {(screenWidth/2)+10, (screenHeight/2)}, /* center */
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_WHITE,
   0
 };
   
 
-Layer layer3 = {		/**< Layer with an orange circle */
+Layer layer3 = {		/**< Layer with p1 */
   (AbShape *)&rect515,
-  {(screenWidth/2)+10, (screenHeight/2)+5}, /**< bit below & right of center */
+  {18, 38}, /* top left */
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_GREEN,
   &layer4,
@@ -45,22 +45,22 @@ Layer layer3 = {		/**< Layer with an orange circle */
 
 Layer fieldLayer = {		/* playing field as a layer */
   (AbShape *) &fieldOutline,
-  {(screenWidth/2)+10, screenHeight/2},/**< center */
+  {screenWidth/2, (screenHeight/2)+5},/**< center */
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_PINK,
   &layer3
 };
 
-Layer layer1 = {		/**< Layer with a red square */
+Layer layer1 = {		/**< Layer with p2 */
   (AbShape *)&rect515,
-  {screenWidth/2, screenHeight/2}, /**< center */
+  {110,130}, /* bottom right */
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_BLUE,
   &fieldLayer,
 };
 
-Layer layer0 = {		/**< Layer with an orange circle */
-  (AbShape *)&circle10,
+Layer layer0 = {		/**< Layer with ball */
+  (AbShape *)&circle6,
   {(screenWidth/2)+10, (screenHeight/2)+5}, /**< bit below & right of center */
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_RED,
@@ -79,8 +79,8 @@ typedef struct MovLayer_s {
 
 /* initial value of {0,0} will be overwritten */
 MovLayer ml3 = { &layer3, {1,1}, 0 }; /**< not all layers move */
-MovLayer ml1 = { &layer1, {1,2}, &ml3 }; 
-MovLayer ml0 = { &layer0, {2,1}, &ml1 }; 
+MovLayer ml1 = { &layer1, {1,2}, 0 }; 
+MovLayer ml0 = { &layer0, {2,1}, 0 }; 
 
 void movLayerDraw(MovLayer *movLayers, Layer *layers)
 {
@@ -165,7 +165,7 @@ void main()
   configureClocks();
   lcd_init();
   shapeInit();
-  p2sw_init(1);
+  p2sw_init(15);
 
   shapeInit();
 
@@ -179,13 +179,16 @@ void main()
   enableWDTInterrupts();      /**< enable periodic interrupt */
   or_sr(0x8);	              /**< GIE (enable interrupts) */
 
-
+  drawString5x7(10,0,"P1: 0",COLOR_WHITE,bgColor);
+  drawString5x7(90,0,"P2: 0",COLOR_WHITE,bgColor);
+  u_int switches = p2sw_read();
+ 
   for(;;) { 
     while (!redrawScreen) { /**< Pause CPU if screen doesn't need updating */
       P1OUT &= ~GREEN_LED;    /**< Green led off witHo CPU */
       or_sr(0x10);	      /**< CPU OFF */
     }
-    P1OUT |= GREEN_LED;       /**< Green led on when CPU on */
+    P1OUT |= GREEN_LED; /**< Green led on when CPU on */
     redrawScreen = 0;
     movLayerDraw(&ml0, &layer0);
   }
