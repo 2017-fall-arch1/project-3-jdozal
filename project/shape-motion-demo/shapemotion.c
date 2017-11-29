@@ -78,8 +78,8 @@ typedef struct MovLayer_s {
 } MovLayer;
 
 /* initial value of {0,0} will be overwritten */
-MovLayer ml3 = { &layer3, {1,1}, 0 }; /**< not all layers move */
-MovLayer ml1 = { &layer1, {1,2}, 0 }; 
+MovLayer ml3 = { &layer3, {2,1}, 0 }; /**< not all layers move */
+MovLayer ml1 = { &layer1, {2,1}, 0 }; 
 MovLayer ml0 = { &layer0, {2,1}, 0 }; 
 
 void movLayerDraw(MovLayer *movLayers, Layer *layers)
@@ -121,8 +121,6 @@ void movLayerDraw(MovLayer *movLayers, Layer *layers)
 
 
 
-//Region fence = {{10,30}, {SHORT_EDGE_PIXELS-10, LONG_EDGE_PIXELS-10}}; /**< Create a fence region */
-
 /** Advances a moving shape within a fence
  *  
  *  \param ml The moving shape to be advanced
@@ -141,6 +139,32 @@ void mlAdvance(MovLayer *ml, Region *fence)
 	  (shapeBoundary.botRight.axes[axis] > fence->botRight.axes[axis]) ) {
 	int velocity = ml->velocity.axes[axis] = -ml->velocity.axes[axis];
 	newPos.axes[axis] += (2*velocity);
+      }	/**< if outside of fence */
+    } /**< for axis */
+    ml->layer->posNext = newPos;
+  } /**< for ml */
+}
+
+/** Advances a moving shape within a fence
+ *  
+ *  \param ml The moving shape to be advanced
+ *  \param fence The region which will serve as a boundary for ml
+ */
+void mlUpDown(MovLayer *ml, Region *fence, char dir)
+{
+  Vec2 newPos;
+  u_char axis;
+  Region shapeBoundary;
+  for (; ml; ml = ml->next) {
+    newPos.axes[0] = ml->layer->pos.axes[0];
+    newPos.axes[1] = dir ? ml->layer->pos.axes[1]+1 : ml->layer->pos.axes[1]-1;
+
+    abShapeGetBounds(ml->layer->abShape, &newPos, &shapeBoundary);
+    for (axis = 0; axis < 2; axis ++) {
+      if ((shapeBoundary.topLeft.axes[axis] < fence->topLeft.axes[axis]) ||
+	  (shapeBoundary.botRight.axes[axis] > fence->botRight.axes[axis]) ) {
+	//int velocity = ml->velocity.axes[axis] = 0;
+	newPos.axes[axis] = ml->layer->pos.axes[axis];
       }	/**< if outside of fence */
     } /**< for axis */
     ml->layer->posNext = newPos;
@@ -191,6 +215,7 @@ void main()
     P1OUT |= GREEN_LED; /**< Green led on when CPU on */
     redrawScreen = 0;
     movLayerDraw(&ml0, &layer0);
+    movLayerDraw(&ml3, &layer0);
   }
 }
 
@@ -201,6 +226,7 @@ void wdt_c_handler()
   P1OUT |= GREEN_LED;		      /**< Green LED on when cpu on */
   count ++;
   if (count == 15) {
+    //  mlUpDown(&ml3, &fieldFence,1);
     mlAdvance(&ml0, &fieldFence);
     if (p2sw_read())
       redrawScreen = 1;
