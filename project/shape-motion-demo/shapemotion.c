@@ -78,9 +78,9 @@ typedef struct MovLayer_s {
 } MovLayer;
 
 /* initial value of {0,0} will be overwritten */
-MovLayer ml3 = { &layer3, {2,1}, 0 }; /**< not all layers move */
-MovLayer ml1 = { &layer1, {4,5}, 0 }; 
-MovLayer ml0 = { &layer0, {10,10}, 0 }; 
+MovLayer ml3 = { &layer3, {5,5}, 0 }; /**< not all layers move */
+MovLayer ml1 = { &layer1, {5,5}, 0 }; 
+MovLayer ml0 = { &layer0, {3,3}, 0 }; 
 
 
 /* Scores */
@@ -132,19 +132,27 @@ void movLayerDraw(MovLayer *movLayers, Layer *layers)
  *  \param ml The moving shape to be advanced
  *  \param fence The region which will serve as a boundary for ml
  */
-void mlAdvance(MovLayer *ml, Region *fence)
+void mlAdvance(MovLayer *ml, MovLayer *p1, MovLayer *p2, Region *fence)
 {
   Vec2 newPos;
   u_char axis;
-  Region shapeBoundary;
+  Region shapeBoundary, p1bound, p2bound;
   for (; ml; ml = ml->next) {
     vec2Add(&newPos, &ml->layer->posNext, &ml->velocity);
     abShapeGetBounds(ml->layer->abShape, &newPos, &shapeBoundary);
+    abShapeGetBounds(p1->layer->abShape, &newPos, &p1bound);
+    abShapeGetBounds(p2->layer->abShape, &newPos, &p2bound); 
     for (axis = 0; axis < 2; axis ++) {
       if ((shapeBoundary.topLeft.axes[axis] < fence->topLeft.axes[axis]) ||
 	  (shapeBoundary.botRight.axes[axis] > fence->botRight.axes[axis]) ) {
 	int velocity = ml->velocity.axes[axis] = -ml->velocity.axes[axis];
 	newPos.axes[axis] += (2*velocity);
+	// if ball hits paddle
+	if(shapeBoundary.topLeft.axes[axis] < p1bound.topLeft.axes[axis]){
+	  newPos.axes[axis] += 0;
+	}
+
+	// if ball hits left wall
 	if(shapeBoundary.topLeft.axes[0] < fence->topLeft.axes[0]){
 	  scr2[1]+=1;
 	  scr2[2]=0;
@@ -157,6 +165,7 @@ void mlAdvance(MovLayer *ml, Region *fence)
 	    // exit
 	  }
 	}
+	// if ball hits right wall
 	if(shapeBoundary.botRight.axes[0] > fence->botRight.axes[0]){
 	  scr1[1]+=1;
 	  scr1[2]=0;
@@ -261,15 +270,29 @@ void main()
 void wdt_c_handler()
 {
   static short count = 0;
+  int switches = p2sw_read();
   P1OUT |= GREEN_LED;		      /**< Green LED on when cpu on */
   count ++;
   if (count == 15) {
-    mlUpDown(&ml1, &fieldFence,0);
-    mlAdvance(&ml0, &fieldFence);
-    if (p2sw_read()&&(1<<0)){
+    //mlUpDown(&ml1, &fieldFence,0);
+    // mlAdvance(&ml0, &ml1, &ml3, &fieldFence);
+    if (switches == 14){
+      mlUpDown(&ml3, &fieldFence,0);
+      //redrawScreen = 1;
+    }
+    if (switches == 13){
       mlUpDown(&ml3, &fieldFence,1);
       //redrawScreen = 1;
     }
+    if (switches == 11){
+      mlUpDown(&ml1, &fieldFence,0);
+      //redrawScreen = 1;
+    }
+    if (switches == 7){
+      mlUpDown(&ml1, &fieldFence,1);
+      //redrawScreen = 1;
+    }
+     mlAdvance(&ml0, &ml3, &ml1, &fieldFence);
     count = 0;
   } 
   P1OUT &= ~GREEN_LED;		    /**< Green LED off when cpu off */
