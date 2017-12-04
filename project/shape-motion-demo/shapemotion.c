@@ -13,10 +13,12 @@
 #include <p2switches.h>
 #include <shape.h>
 #include <abCircle.h>
+#include "buzzer.h"
 
 #define GREEN_LED BIT6
 //#define RED_LED BIT0
 
+char stateSound = 0;
 AbRect rect515 = {abRectGetBounds, abRectCheck, {4,17}}; /**< 5x15 rectangle */
 AbRArrow rightArrow = {abRArrowGetBounds, abRArrowCheck, 30};
 
@@ -147,13 +149,16 @@ void mlAdvance(MovLayer *ml, MovLayer *p1, MovLayer *p2, Region *fence)
 	  (shapeBoundary.botRight.axes[axis] > fence->botRight.axes[axis]) ) {
 	int velocity = ml->velocity.axes[axis] = -ml->velocity.axes[axis];
 	newPos.axes[axis] += (2*velocity);
+	
 	// if ball hits paddle
-	if(shapeBoundary.topLeft.axes[axis] < p1bound.topLeft.axes[axis]){
+	if(shapeBoundary.botRight.axes[axis] == p1bound.topLeft.axes[axis]){
 	  newPos.axes[axis] += 0;
 	}
 
 	// if ball hits left wall
 	if(shapeBoundary.topLeft.axes[0] < fence->topLeft.axes[0]){
+	  //buzzer_set_period(1000);
+	  stateSound = 1;
 	  scr2[1]+=1;
 	  scr2[2]=0;
 	  if(scr2[1] == ':'){
@@ -167,6 +172,7 @@ void mlAdvance(MovLayer *ml, MovLayer *p1, MovLayer *p2, Region *fence)
 	}
 	// if ball hits right wall
 	if(shapeBoundary.botRight.axes[0] > fence->botRight.axes[0]){
+	  stateSound = 1;
 	  scr1[1]+=1;
 	  scr1[2]=0;
 	  if(scr1[1] == ':'){
@@ -179,6 +185,7 @@ void mlAdvance(MovLayer *ml, MovLayer *p1, MovLayer *p2, Region *fence)
     } /**< for axis */
     ml->layer->posNext = newPos;
   } /**< for ml */
+  //buzzer_init();
 }
 
 /** Advances a moving shape within a fence
@@ -230,12 +237,13 @@ void main()
 
   shapeInit();
 
+  buzzer_init();
+  
   layerInit(&layer0);
   layerDraw(&layer0);
 
 
   layerGetBounds(&fieldLayer, &fieldFence);
-
 
   enableWDTInterrupts();      /**< enable periodic interrupt */
   or_sr(0x8);	              /**< GIE (enable interrupts) */
@@ -291,6 +299,13 @@ void wdt_c_handler()
     if (switches == 7){
       mlUpDown(&ml1, &fieldFence,1);
       //redrawScreen = 1;
+    }
+    if(stateSound == 1 ){
+      buzzer_set_period(2000);
+      stateSound = 0;
+    }
+    else if(stateSound == 0) {
+      buzzer_set_period(0);
     }
      mlAdvance(&ml0, &ml3, &ml1, &fieldFence);
     count = 0;

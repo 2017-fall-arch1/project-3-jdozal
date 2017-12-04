@@ -1,8 +1,7 @@
 #include <msp430.h>
 #include "libTimer.h"
 #include "buzzer.h"
-#include "switches.h"
-
+int state = 0;
 int counter = 0;
 void buzzer_init()
 {
