@@ -23,13 +23,14 @@ on `./project/shape-motion-demo`
 ### How to play
 Using the switches (SW1, SW2, SW3, SW4) you control the pladdles of both players.
 
-**Paddles P1*
+**Paddles P1**
 
 :arrow_up: SW1
 
 :arrow_down: SW2
 
 **Paddles P2**
+
 :arrow_up: SW3
 
 :arrow_down: SW4
