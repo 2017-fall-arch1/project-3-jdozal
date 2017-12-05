@@ -38,7 +38,7 @@ Layer layer4 = {
 
 Layer layer3 = {		/**< Layer with p1 */
   (AbShape *)&rect515,
-  {18, 38}, /* top left */
+  {12, 38}, /* top left */
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_GREEN,
   0,
@@ -55,7 +55,7 @@ Layer fieldLayer = {		/* playing field as a layer */
 
 Layer layer1 = {		/**< Layer with p2 */
   (AbShape *)&rect515,
-  {110,130}, /* bottom right */
+  {115,130}, /* bottom right */
   {0,0}, {0,0},				    /* last & next pos */
   COLOR_BLUE,
   &fieldLayer,
@@ -149,8 +149,9 @@ void mlAdvance(MovLayer *ml, MovLayer *p1, MovLayer *p2, Region *fence)
     abShapeGetBounds(p2->layer->abShape, &newP2, &p2bound); 
     for (axis = 0; axis < 2; axis ++) {
       //int velocity = ml->velocity.axes[axis] = -ml->velocity.axes[axis];
-      	// if ball hits paddle p1
-      if((shapeBoundary.topLeft.axes[0] < p1bound.botRight.axes[0])&&(shapeBoundary.topLeft.axes[1]<p1bound.botRight.axes[1])&&(shapeBoundary.botRight.axes[1]>p1bound.topLeft.axes[1])){
+
+      // if ball hits paddle p1
+      if((shapeBoundary.topLeft.axes[0]+7 < p1bound.botRight.axes[0])&&(shapeBoundary.topLeft.axes[1]<p1bound.botRight.axes[1])&&(shapeBoundary.botRight.axes[1]>p1bound.topLeft.axes[1])){
 	int velocity = ml->velocity.axes[axis] = -ml->velocity.axes[axis];
 	newPos.axes[axis] += (2*velocity);
 	stateSound = 1;
@@ -158,7 +159,7 @@ void mlAdvance(MovLayer *ml, MovLayer *p1, MovLayer *p2, Region *fence)
       }
 
       //if ball hits paddle p2
-       if((shapeBoundary.botRight.axes[0] > p2bound.topLeft.axes[0])&&(shapeBoundary.topLeft.axes[1]<p2bound.botRight.axes[1])&&(shapeBoundary.botRight.axes[1]>p2bound.topLeft.axes[1])){
+       if((shapeBoundary.botRight.axes[0] > p2bound.topLeft.axes[0]-4)&&(shapeBoundary.topLeft.axes[1]<p2bound.botRight.axes[1])&&(shapeBoundary.botRight.axes[1]>p2bound.topLeft.axes[1])){
 	int velocity = ml->velocity.axes[axis] = -ml->velocity.axes[axis];
 	newPos.axes[axis] += (2*velocity);
 	stateSound = 1;
