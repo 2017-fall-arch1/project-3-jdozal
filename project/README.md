@@ -1,6 +1,6 @@
 # Pongsito
-<iframe src="https://giphy.com/embed/4IAzyrhy9rkis" width="480" height="361" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/tennis-4IAzyrhy9rkis">via GIPHY</a></p>
 <img src="https://media1.giphy.com/media/fvA1ieS8rEV8Y/giphy.gif" width=40%>
+
 ## What's this? 
 Inspired by one of the earliest arcade videogames, Pongsito introduces a game where two players use the paddles to hit a red ball back and forth on a black scren. The game keeps track of the score of P1 and P2, and stops when one player scores 100 points. 
 
