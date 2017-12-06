@@ -18,6 +18,8 @@
 #define GREEN_LED BIT6
 //#define RED_LED BIT0
 
+char song = 0;
+char gameOver = 0;
 char stateSound = 0;
 AbRect rect515 = {abRectGetBounds, abRectCheck, {4,17}}; /**< 5x15 rectangle */
 AbRArrow rightArrow = {abRArrowGetBounds, abRArrowCheck, 30};
@@ -82,7 +84,7 @@ typedef struct MovLayer_s {
 /* initial value of {0,0} will be overwritten */
 MovLayer ml3 = { &layer3, {8,8}, 0 }; /**< not all layers move */
 MovLayer ml1 = { &layer1, {8,8}, 0 }; 
-MovLayer ml0 = { &layer0, {2,2}, 0 }; 
+MovLayer ml0 = { &layer0, {5,5}, 0 }; 
 
 
 /* Scores */
@@ -150,22 +152,6 @@ void mlAdvance(MovLayer *ml, MovLayer *p1, MovLayer *p2, Region *fence)
     for (axis = 0; axis < 2; axis ++) {
       //int velocity = ml->velocity.axes[axis] = -ml->velocity.axes[axis];
 
-      // if ball hits paddle p1
-      if((shapeBoundary.topLeft.axes[0]+7 < p1bound.botRight.axes[0])&&(shapeBoundary.topLeft.axes[1]<p1bound.botRight.axes[1])&&(shapeBoundary.botRight.axes[1]>p1bound.topLeft.axes[1])){
-	int velocity = ml->velocity.axes[axis] = -ml->velocity.axes[axis];
-	newPos.axes[axis] += (2*velocity);
-	stateSound = 1;
-	//newPos.axes[axis] += 1;
-      }
-
-      //if ball hits paddle p2
-       if((shapeBoundary.botRight.axes[0] > p2bound.topLeft.axes[0]-4)&&(shapeBoundary.topLeft.axes[1]<p2bound.botRight.axes[1])&&(shapeBoundary.botRight.axes[1]>p2bound.topLeft.axes[1])){
-	int velocity = ml->velocity.axes[axis] = -ml->velocity.axes[axis];
-	newPos.axes[axis] += (2*velocity);
-	stateSound = 1;
-	//newPos.axes[axis] += 1;
-      }
-     
       // if ball hits one of walls 
       if ((shapeBoundary.topLeft.axes[axis] < fence->topLeft.axes[axis]) ||
 	  (shapeBoundary.botRight.axes[axis] > fence->botRight.axes[axis]) ) {       
@@ -182,8 +168,8 @@ void mlAdvance(MovLayer *ml, MovLayer *p1, MovLayer *p2, Region *fence)
 	    scr2[0]+=1;
 	    scr2[2]=0;
 	  }
-	  if(scr2[0] == ':'){
-	    // exit
+	  if(scr2[0] == '2'){
+	    gameOver='2';
 	  }
 	}
 	// if ball hits right wall
@@ -196,8 +182,28 @@ void mlAdvance(MovLayer *ml, MovLayer *p1, MovLayer *p2, Region *fence)
 	    scr1[0]+=1;
 	    scr1[2]=0;
 	  }
+	  if(scr1[0] == '2'){
+	    gameOver='1';
+	  }
 	}
       }	/**< if outside of fence */
+      
+      // if ball hits paddle p1
+      else if((shapeBoundary.topLeft.axes[0]+7 < p1bound.botRight.axes[0])&&(shapeBoundary.topLeft.axes[1]<p1bound.botRight.axes[1])&&(shapeBoundary.botRight.axes[1]>p1bound.topLeft.axes[1])){
+	int velocity = ml->velocity.axes[axis] = -ml->velocity.axes[axis];
+	newPos.axes[axis] += (2*velocity);
+	stateSound = 1;
+	//newPos.axes[axis] += 1;
+      }
+
+      //if ball hits paddle p2
+      else if((shapeBoundary.botRight.axes[0] > p2bound.topLeft.axes[0]-4)&&(shapeBoundary.topLeft.axes[1]<p2bound.botRight.axes[1])&&(shapeBoundary.botRight.axes[1]>p2bound.topLeft.axes[1])){
+        int velocity = ml->velocity.axes[axis] = -ml->velocity.axes[axis];
+	newPos.axes[axis] += (2*velocity);
+	stateSound = 1;
+	//newPos.axes[axis] += 1;
+      }
+    
     } /**< for axis */
     ml->layer->posNext = newPos;
   
@@ -269,11 +275,7 @@ void main()
    scr2[1]='0';
    scr2[2]=0;
    
-  for(;;) { 
-    while (!redrawScreen) { /**< Pause CPU if screen doesn't need updating */
-      P1OUT &= ~GREEN_LED;    /**< Green led off witHo CPU */
-      or_sr(0x10);	      /**< CPU OFF */
-    }
+  for(;;) {
     P1OUT |= GREEN_LED; /**< Green led on when CPU on */
     redrawScreen = 1;
     movLayerDraw(&ml0, &layer0);
@@ -294,7 +296,21 @@ void wdt_c_handler()
   int switches = p2sw_read();
   P1OUT |= GREEN_LED;		      /**< Green LED on when cpu on */
   count ++;
-  if (count == 15) {
+  if(gameOver) { /**< Pause CPU if screen doesn't need updating */
+     P1OUT &= ~GREEN_LED;/**< Green led off witHo CPU */
+     clearScreen(bgColor);
+     drawString5x7(40,50,"GAME OVER",COLOR_WHITE,bgColor);
+     // drawString5x7(40,50,"GAME OVER",COLOR_WHITE,bgColor);
+     buzzer_set_period(0);
+     if(gameOver == '1'){
+      drawString5x7(40,70,"P1 WINS :)",COLOR_GREEN,bgColor);  
+     }
+     if(gameOver == '2') {
+       drawString5x7(40,70,"P2 WINS :)",COLOR_BLUE,bgColor);
+     }
+     or_sr(0x10); /**< CPU OFF */
+  }
+  else if (count == 15) {
      mlAdvance(&ml0, &ml3, &ml1, &fieldFence);
     if (switches == 14){
       mlUpDown(&ml3, &fieldFence,0);

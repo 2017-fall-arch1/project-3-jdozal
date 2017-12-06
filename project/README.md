@@ -2,7 +2,7 @@
 <img src="https://media1.giphy.com/media/fvA1ieS8rEV8Y/giphy.gif" width=40%>
 
 ## What's this? 
-Inspired by one of the earliest arcade videogames [Pong](http://www.pong-story.com/intro.htm), Pongsito introduces a game where two players use the paddles to hit a red ball back and forth on a black scren. The game keeps track of the score of P1 and P2, and stops when one player scores 100 points. 
+Inspired by one of the earliest arcade videogames [Pong](http://www.pong-story.com/intro.htm), Pongsito introduces a game where two players use the paddles to hit a red ball back and forth on a black scren. The game keeps track of the score of P1 and P2, and stops when one player scores 20 points. 
 
 ## Sounds cool, what I have to do?
 Before playing you should know how to install the game, and how to play it. 

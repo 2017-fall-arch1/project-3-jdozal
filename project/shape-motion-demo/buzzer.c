@@ -1,7 +1,6 @@
 #include <msp430.h>
 #include "libTimer.h"
 #include "buzzer.h"
-int state = 0;
 int counter = 0;
 void buzzer_init()
 {
@@ -33,19 +32,19 @@ void buzzer_advance_frequency() {
       counter++;
 
   // Button 1, panic button
-  if(state == 1) {
+  if(song == 1) {
     buzzer_set_period(1000);
   }
   // Button 2, plays La Cucaracha
-  if(state == 2){
+  if(song == 2){
     buzzer_set_period(song1[counter]);
   }
   // Button 3, plays song 2
-  else if(state == 3){
+  else if(song == 3){
     buzzer_set_period(song2[counter]);
   }
   //Button 4, plays song 3
-  else if(state == 4){
+  else if(song == 4){
     buzzer_set_period(song3[counter]);
   }
 }
