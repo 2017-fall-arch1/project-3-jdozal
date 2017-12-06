@@ -20,7 +20,7 @@
 
 char song = 0;
 char gameOver = 0;
-char stateSound = 0;
+int stateSound = 0;
 AbRect rect515 = {abRectGetBounds, abRectCheck, {4,17}}; /**< 5x15 rectangle */
 AbRArrow rightArrow = {abRArrowGetBounds, abRArrowCheck, 30};
 
@@ -328,17 +328,8 @@ void wdt_c_handler()
       mlUpDown(&ml1, &fieldFence,1);
       //redrawScreen = 1;
     }
-    if(stateSound == 1 ){
-      buzzer_set_period(2000);
-      stateSound = 0;
-    }
-    else if(stateSound == 2){
-      buzzer_set_period(4000);
-      stateSound = 0;
-    }
-    else if(stateSound == 0) {
-      buzzer_set_period(0);
-    }
+    soundChange(stateSound);
+    stateSound = 0;
     count = 0;
   } 
   P1OUT &= ~GREEN_LED;		    /**< Green LED off when cpu off */
